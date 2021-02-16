@@ -33,8 +33,8 @@ import (
 var encryptCmd = &cobra.Command{
 	Use:     "encrypt",
 	Aliases: []string{"en"},
-	Short:   "",
-	Long:    ``,
+	Short:   "Encrypt file using specified method",
+	Long:    `Encrypt file using specified method. (Default: AES)`,
 	Run:     encryptRun,
 }
 
@@ -44,6 +44,13 @@ func encryptRun(cmd *cobra.Command, args []string) {
 		fmt.Println("Usage: " + utils.AppName + " encrypt [filename]")
 		os.Exit(0)
 	}
+
+	if len(args) > 1 {
+		fmt.Println("Error: Too many argument")
+		fmt.Println("Usage: " + utils.AppName + " encrypt [filename]")
+		os.Exit(0)
+	}
+
 	fileName := args[0]
 	filename, extension := utils.GetFileNameExt(fileName)
 	if extension == "" {
@@ -51,11 +58,28 @@ func encryptRun(cmd *cobra.Command, args []string) {
 	}
 	encryptFileName := filename + ".aes"
 
-	password, err := utils.PromptTermPass()
+	password, err := utils.PromptTermPass("Password: ")
 	if err != nil {
 		utils.ErrorLogger(err)
 		os.Exit(1)
 	}
+
+	if len(password) < 5 {
+		fmt.Println("Warning: Insecure password")
+		fmt.Println("You should use password with more than 5 characters")
+	}
+
+	verifyPassword, err := utils.PromptTermPass("Verify Password: ")
+	if err != nil {
+		utils.ErrorLogger(err)
+		os.Exit(1)
+	}
+
+	if string(verifyPassword) != string(password) {
+		fmt.Println("Error: Both password is not same")
+		os.Exit(1)
+	}
+
 	data, err := utils.ReadFile(fileName)
 	if err != nil {
 		utils.ErrorLogger(err)
@@ -71,6 +95,12 @@ func encryptRun(cmd *cobra.Command, args []string) {
 	utils.SaveFile(encryptFileName, encryptdata)
 	fmt.Println(fileName + " encrypted successfully.")
 
+	if !keepenOpt {
+		err := os.Remove(args[0])
+		if err != nil {
+			utils.ErrorLogger(err)
+		}
+	}
 }
 
 var (

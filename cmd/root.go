@@ -36,8 +36,10 @@ var cfgFile string
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "go-encryptor",
-	Short: "go-encryptor",
-	Long:  `go-encryptor`,
+	Short: "go-encryptor: encrypt file using password",
+	Long: `go-encryptor: A file encryptor.
+go-encryptor is created to be as simple as possible to help you
+encrypt and decrypt files.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },

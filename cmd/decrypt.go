@@ -33,8 +33,8 @@ import (
 var decryptCmd = &cobra.Command{
 	Use:     "decrypt",
 	Aliases: []string{"de"},
-	Short:   "",
-	Long:    ``,
+	Short:   "Decrypt encrypted file using specified method",
+	Long:    `Decrypt encrypted file using specified method. (Default: AES)`,
 	Run:     decryptRun,
 }
 
@@ -44,11 +44,18 @@ func decryptRun(cmd *cobra.Command, args []string) {
 		fmt.Println("Usage: " + utils.AppName + " encrypt [filename]")
 		os.Exit(0)
 	}
+
+	if len(args) > 1 {
+		fmt.Println("Error: Too many argument")
+		fmt.Println("Usage: " + utils.AppName + " encrypt [filename]")
+		os.Exit(0)
+	}
+
 	encryptedfileName := args[0]
 
 	filename, _ := utils.GetFileNameExt(encryptedfileName)
 
-	password, err := utils.PromptTermPass()
+	password, err := utils.PromptTermPass("Password: ")
 	if err != nil {
 		utils.ErrorLogger(err)
 		os.Exit(1)
@@ -80,6 +87,13 @@ func decryptRun(cmd *cobra.Command, args []string) {
 		utils.SaveFile(filename, data)
 	}
 	fmt.Println(filename + " decrypted successfully.")
+
+	if !keepdeOpt {
+		err := os.Remove(args[0])
+		if err != nil {
+			utils.ErrorLogger(err)
+		}
+	}
 }
 
 var (

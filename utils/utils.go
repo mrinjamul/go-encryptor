@@ -116,8 +116,8 @@ func ErrorLogger(err error) {
 }
 
 // PromptTermPass takes password as user input
-func PromptTermPass() ([]byte, error) {
-	fmt.Print("password: ")
+func PromptTermPass(promptText string) ([]byte, error) {
+	fmt.Print(promptText)
 	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
 	fmt.Println()
 	if err != nil {
@@ -132,6 +132,9 @@ func GetFileNameExt(file string) (filename, extension string) {
 	if len(file) > 4 && file[len(file)-4:len(file)-3] == "." {
 		filename = file[0 : len(file)-4]
 		extension = file[len(file)-3:]
+	} else if len(file) > 3 && file[len(file)-3:len(file)-2] == "." {
+		filename = file[0 : len(file)-3]
+		extension = file[len(file)-2:]
 	} else {
 		filename = file
 		extension = ""
