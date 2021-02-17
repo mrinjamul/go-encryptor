@@ -32,7 +32,7 @@ import (
 // encryptCmd represents the encrypt command
 var encryptCmd = &cobra.Command{
 	Use:     "encrypt",
-	Aliases: []string{"en"},
+	Aliases: []string{"en", "e"},
 	Short:   "Encrypt file using specified method",
 	Long:    `Encrypt file using specified method. (Default: AES)`,
 	Run:     encryptRun,

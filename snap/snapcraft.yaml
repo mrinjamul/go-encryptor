@@ -22,4 +22,5 @@ parts:
 plugs:
   go-encryptor-home:
     interface: home
+  go-encryptor-removable-media:
     interface: removable-media
