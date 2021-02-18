@@ -32,7 +32,7 @@ import (
 // decryptCmd represents the decrypt command
 var decryptCmd = &cobra.Command{
 	Use:     "decrypt",
-	Aliases: []string{"de", "e"},
+	Aliases: []string{"de"},
 	Short:   "Decrypt encrypted file using specified method",
 	Long:    `Decrypt encrypted file using specified method. (Default: AES)`,
 	Run:     decryptRun,

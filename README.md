@@ -11,25 +11,25 @@ A encryptor to encrypt files using passwords.
 Encrypt a file,
 
 ```sh
-go-encryptor encypt "filename"
+go-encryptor encrypt "filename"
 ```
 
 Decrypt a file,
 
 ```sh
-go-encryptor decypt "filename"
+go-encryptor decrypt "filename"
 ```
 
 Use k flag in both `encrypt` & `decrypt` to keep the file.
 
 ```sh
-go-encryptor encypt -k "filename"
+go-encryptor encrypt -k "filename"
 ```
 
 or
 
 ```sh
-go-encryptor encypt --keep "filename"
+go-encryptor encrypt --keep "filename"
 ```
 
 ## Installing

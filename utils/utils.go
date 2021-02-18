@@ -19,12 +19,6 @@ import (
 // AppName is the application name
 var AppName = "go-encryptor"
 
-// GetVersion return code of the application
-func GetVersion() string {
-	version := "1.0.0"
-	return version
-}
-
 // deriveKey hash the RAW password
 func deriveKey(password, salt []byte) ([]byte, []byte, error) {
 	if salt == nil {

@@ -10,11 +10,13 @@
 
 # Test binary, built with `go test -c`
 *.test
+# Test Data
 *.aes
 *.jpg
 *.mp3
 *.mp4
-
+*.pdf
+*.md
 
 
 # Output of the go coverage tool, specifically when used with LiteIDE
