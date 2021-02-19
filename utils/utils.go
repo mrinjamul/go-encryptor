@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
+	"strings"
 	"syscall"
 
 	"golang.org/x/crypto/scrypt"
@@ -152,4 +154,29 @@ func SaveFile(filename string, data []byte) error {
 		return err
 	}
 	return nil
+}
+
+// IsDir is to check if its a dir
+func IsDir(path string) (bool, error) {
+	out, err := os.Stat(path)
+	if err != nil {
+		return false, err
+	}
+	return out.IsDir(), nil
+}
+
+// ConfirmPrompt will prompt to user for yes or no
+func ConfirmPrompt(message string) bool {
+	var response string
+	fmt.Print(message + " (yes/no) :")
+	fmt.Scanln(&response)
+
+	switch strings.ToLower(response) {
+	case "y", "yes":
+		return true
+	case "n", "no":
+		return false
+	default:
+		return false
+	}
 }

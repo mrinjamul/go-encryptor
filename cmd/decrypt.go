@@ -26,6 +26,7 @@ import (
 	"os"
 
 	"github.com/mrinjamul/go-encryptor/utils"
+	twarper "github.com/mrinjamul/go-tar/tarwarper"
 	"github.com/spf13/cobra"
 )
 
@@ -52,6 +53,12 @@ func decryptRun(cmd *cobra.Command, args []string) {
 	}
 
 	encryptedfileName := args[0]
+
+	// check if file exists
+	if _, err := os.Stat(encryptedfileName); os.IsNotExist(err) {
+		fmt.Println("Error: No such file or directory")
+		os.Exit(1)
+	}
 
 	filename, _ := utils.GetFileNameExt(encryptedfileName)
 
@@ -85,6 +92,18 @@ func decryptRun(cmd *cobra.Command, args []string) {
 		utils.SaveFile(filename+"."+string(encryptedExt), data)
 	} else {
 		utils.SaveFile(filename, data)
+	}
+	if string(encryptedExt) == "tez" {
+		path, err := os.Getwd()
+		if err != nil {
+			utils.ErrorLogger(err)
+		}
+		err = twarper.ExtarctTar(path, filename+".tez")
+		_ = os.Remove(filename + ".tez")
+		if err != nil {
+			utils.ErrorLogger(err)
+			os.Exit(1)
+		}
 	}
 	fmt.Println(filename + " decrypted successfully.")
 

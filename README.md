@@ -4,7 +4,15 @@ A encryptor to encrypt files using passwords.
 
 ## Features
 
+- Can encrypt any files
+- Can encrypt folder (**Experimental**, use at own risk)
 - Only AES encryption is available right now.
+
+**Tip**: To encrypt a folder, create a tarball of the folder then encrypt it (**Recommanded**)
+
+```sh
+tar -cf folder.tar folder
+```
 
 ## Usage
 

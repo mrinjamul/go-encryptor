@@ -23,9 +23,12 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"strings"
 
 	"github.com/mrinjamul/go-encryptor/utils"
+	twarper "github.com/mrinjamul/go-tar/tarwarper"
 	"github.com/spf13/cobra"
 )
 
@@ -52,6 +55,31 @@ func encryptRun(cmd *cobra.Command, args []string) {
 	}
 
 	fileName := args[0]
+	// check if file exists
+	if _, err := os.Stat(fileName); os.IsNotExist(err) {
+		fmt.Println("Error: No such file or directory")
+		os.Exit(1)
+	}
+	if strings.HasSuffix(fileName, "/") {
+		fileName = fileName[:len(fileName)-1]
+	}
+	// Check if argument is directory
+	isDirectory, err := utils.IsDir(fileName)
+	if err != nil {
+		fmt.Println("Error: No such file or directory")
+		os.Exit(1)
+	}
+
+	if isDirectory {
+		fmt.Println("Warning: Encrypting Folder is still Experimental")
+		check := utils.ConfirmPrompt("Still Want to encrypt?")
+		if !check {
+			os.Exit(0)
+		}
+	}
+
+	var tarName string
+
 	filename, extension := utils.GetFileNameExt(fileName)
 	if extension == "" {
 		extension = "ger"
@@ -80,6 +108,17 @@ func encryptRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	if isDirectory {
+		extension = "tez"
+		tarName = fileName + "." + extension
+		err := twarper.CreateTar([]string{fileName}, tarName)
+		if err != nil {
+			os.Remove(tarName)
+			log.Fatalln(err)
+		}
+		fileName = tarName
+	}
+
 	data, err := utils.ReadFile(fileName)
 	if err != nil {
 		utils.ErrorLogger(err)
@@ -93,12 +132,29 @@ func encryptRun(cmd *cobra.Command, args []string) {
 	}
 
 	utils.SaveFile(encryptFileName, encryptdata)
+	if isDirectory {
+		err = os.Remove(tarName)
+		if err != nil {
+			utils.ErrorLogger(err)
+		}
+		fileName = fileName[:len(fileName)-4]
+	}
 	fmt.Println(fileName + " encrypted successfully.")
 
 	if !keepenOpt {
-		err := os.Remove(args[0])
-		if err != nil {
-			utils.ErrorLogger(err)
+		if !isDirectory {
+			err := os.Remove(args[0])
+			if err != nil {
+				utils.ErrorLogger(err)
+			}
+		} else {
+			// Prompt before deletion as it's still experimental
+			if utils.ConfirmPrompt("Do you want to remove unencrypted folder?") {
+				err := os.RemoveAll(args[0])
+				if err != nil {
+					utils.ErrorLogger(err)
+				}
+			}
 		}
 	}
 }
