@@ -84,6 +84,9 @@ func encryptRun(cmd *cobra.Command, args []string) {
 	if extension == "" {
 		extension = "ger"
 	}
+	if len(extension) == 2 {
+		extension = extension + "2"
+	}
 	encryptFileName := filename + ".aes"
 
 	password, err := utils.PromptTermPass("Password: ")
