@@ -34,7 +34,7 @@ jobs:
           GOARCH: ${{ matrix.GOARCH }}
         run: |
           go version
-          go build -o ./artifacts/gpassmanager-${GITHUB_REF##*/}-${{ matrix.suffix }}
+          go build -o ./artifacts/go-encryptor-${GITHUB_REF##*/}-${{ matrix.suffix }}
       - uses: actions/upload-artifact@v2
         name: Upload artifacts
         with:
