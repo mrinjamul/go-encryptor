@@ -24,6 +24,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/mrinjamul/go-encryptor/utils"
 	twarper "github.com/mrinjamul/go-tar/tarwarper"
@@ -87,6 +88,10 @@ func decryptRun(cmd *cobra.Command, args []string) {
 	}
 
 	encryptedExt, data := data[len(data)-3:], data[:len(data)-3]
+
+	if strings.Contains(string(encryptedExt), "2") {
+		encryptedExt = encryptedExt[:2]
+	}
 
 	if string(encryptedExt) != "ger" {
 		utils.SaveFile(filename+"."+string(encryptedExt), data)
