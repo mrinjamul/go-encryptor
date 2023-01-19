@@ -27,6 +27,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/mrinjamul/go-encryptor/crypt"
 	"github.com/mrinjamul/go-encryptor/utils"
 	twarper "github.com/mrinjamul/go-tar/tarwarper"
 	"github.com/spf13/cobra"
@@ -60,9 +61,9 @@ func encryptRun(cmd *cobra.Command, args []string) {
 		fmt.Println("Error: No such file or directory")
 		os.Exit(1)
 	}
-	if strings.HasSuffix(fileName, "/") {
-		fileName = fileName[:len(fileName)-1]
-	}
+
+	fileName = strings.TrimSuffix(fileName, "/")
+
 	// Check if argument is directory
 	isDirectory, err := utils.IsDir(fileName)
 	if err != nil {
@@ -129,7 +130,7 @@ func encryptRun(cmd *cobra.Command, args []string) {
 	}
 	data = append(data, extension...)
 
-	encryptdata, err := utils.AESEncrypt(password, data)
+	encryptdata, err := crypt.AESEncrypt(password, data)
 	if err != nil {
 		utils.ErrorLogger(err)
 	}

@@ -26,6 +26,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/mrinjamul/go-encryptor/crypt"
 	"github.com/mrinjamul/go-encryptor/utils"
 	twarper "github.com/mrinjamul/go-tar/tarwarper"
 	"github.com/spf13/cobra"
@@ -81,7 +82,7 @@ func decryptRun(cmd *cobra.Command, args []string) {
 	// 	os.Exit(0)
 	// }
 
-	data, err := utils.AESDecrypt(password, encryptedData)
+	data, err := crypt.AESDecrypt(password, encryptedData)
 	if err != nil {
 		fmt.Println("Error: Wrong Password")
 		os.Exit(0)
