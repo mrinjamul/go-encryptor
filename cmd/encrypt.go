@@ -27,6 +27,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/mrinjamul/go-encryptor/crypt"
 	"github.com/mrinjamul/go-encryptor/utils"
 	twarper "github.com/mrinjamul/go-tar/tarwarper"
 	"github.com/spf13/cobra"
@@ -129,7 +130,7 @@ func encryptRun(cmd *cobra.Command, args []string) {
 	}
 	data = append(data, extension...)
 
-	encryptdata, err := utils.AESEncrypt(password, data)
+	encryptdata, err := crypt.AESEncrypt(password, data)
 	if err != nil {
 		utils.ErrorLogger(err)
 	}
