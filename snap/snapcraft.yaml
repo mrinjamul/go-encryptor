@@ -1,6 +1,6 @@
 name: go-encryptor
 base: core18 # the base snap is the execution environment for this snap
-version: "1.0.2"
+version: "1.1.0"
 summary: A Simple A file encryptor
 description: |
   go-encryptor is created to be as simple as possible to help you

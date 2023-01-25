@@ -11,6 +11,7 @@
 # Test binary, built with `go test -c`
 *.test
 # Test Data
+test-data/
 *.aes
 *.jpg
 *.mp3

@@ -24,6 +24,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/mrinjamul/go-encryptor/crypt"
@@ -55,6 +56,16 @@ func decryptRun(cmd *cobra.Command, args []string) {
 	}
 
 	encryptedfileName := args[0]
+	var filename string // filename without extension
+
+	// check if file has no extension with filepath package
+	exten := filepath.Ext(encryptedfileName)
+	if exten == ".aes" {
+		filename = strings.TrimSuffix(encryptedfileName, exten)
+	} else {
+		filename = encryptedfileName
+		encryptedfileName = encryptedfileName + ".aes"
+	}
 
 	// check if file exists
 	if _, err := os.Stat(encryptedfileName); os.IsNotExist(err) {
@@ -62,14 +73,20 @@ func decryptRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	filename, _ := utils.GetFileNameExt(encryptedfileName)
+	var password []byte
 
-	password, err := utils.PromptTermPass("Password: ")
-	if err != nil {
-		utils.ErrorLogger(err)
-		os.Exit(1)
+	if passwordOpt == "" {
+		p, err := utils.PromptTermPass("Password: ")
+		password = p
+		if err != nil {
+			utils.ErrorLogger(err)
+			os.Exit(1)
+		}
+	} else {
+		password = []byte(passwordOpt)
 	}
 
+	// read encrypted data
 	encryptedData, err := utils.ReadFile(encryptedfileName)
 	if err != nil {
 		utils.ErrorLogger(err)
@@ -82,20 +99,39 @@ func decryptRun(cmd *cobra.Command, args []string) {
 	// 	os.Exit(0)
 	// }
 
-	data, err := crypt.AESDecrypt(password, encryptedData)
-	if err != nil {
-		fmt.Println("Error: Wrong Password")
-		os.Exit(0)
+	var data []byte
+	// check if encryption method
+	if methodOpt == "aes" {
+		data, err = crypt.AESDecrypt(password, encryptedData)
+		if err != nil {
+			fmt.Println("Error: Wrong Password")
+			os.Exit(0)
+		}
+	} else if methodOpt == "xchacha20" || methodOpt == "chacha20" {
+		data, err = crypt.ChaCha20Decrypt(password, encryptedData)
+		if err != nil {
+			fmt.Println("Error: Wrong Password")
+			os.Exit(0)
+		}
 	}
 
 	encryptedExt, data := data[len(data)-3:], data[:len(data)-3]
+
+	// print to stdout and return
+	if stdoutOpt {
+		fmt.Print(data)
+		return
+	}
 
 	if strings.Contains(string(encryptedExt), "2") {
 		encryptedExt = encryptedExt[:2]
 	}
 
 	if string(encryptedExt) != "ger" {
-		utils.SaveFile(filename+"."+string(encryptedExt), data)
+		if !strings.HasSuffix(filename, ".") {
+			filename = filename + "."
+		}
+		utils.SaveFile(filename+string(encryptedExt), data)
 	} else {
 		utils.SaveFile(filename, data)
 	}
@@ -114,7 +150,7 @@ func decryptRun(cmd *cobra.Command, args []string) {
 	fmt.Println(filename + " decrypted successfully.")
 
 	if !keepdeOpt {
-		err := os.Remove(args[0])
+		err := os.Remove(encryptedfileName)
 		if err != nil {
 			utils.ErrorLogger(err)
 		}
@@ -123,6 +159,7 @@ func decryptRun(cmd *cobra.Command, args []string) {
 
 var (
 	keepdeOpt bool
+	stdoutOpt bool
 )
 
 func init() {
@@ -138,4 +175,8 @@ func init() {
 	// is called directly, e.g.:
 	// decryptCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	decryptCmd.Flags().BoolVarP(&keepdeOpt, "keep", "k", false, "Keep encrypted file")
+	decryptCmd.Flags().BoolVarP(&stdoutOpt, "out", "o", false, "Print to stdout")
+	decryptCmd.Flags().StringVarP(&passwordOpt, "password", "p", "", "Get password")
+	// methods for encryption flag
+	decryptCmd.Flags().StringVarP(&methodOpt, "method", "m", "aes", "Encryption method")
 }
