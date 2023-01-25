@@ -94,7 +94,7 @@ func encryptRun(cmd *cobra.Command, args []string) {
 	if len(extension) == 2 {
 		extension = extension + "2"
 	}
-	encryptFileName := filename + ".aes"
+	encryptFileName := filename + AppExtension
 
 	var password []byte
 	// if password is not provided

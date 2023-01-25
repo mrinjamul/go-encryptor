@@ -60,11 +60,11 @@ func decryptRun(cmd *cobra.Command, args []string) {
 
 	// check if file has no extension with filepath package
 	exten := filepath.Ext(encryptedfileName)
-	if exten == ".aes" {
+	if exten == AppExtension {
 		filename = strings.TrimSuffix(encryptedfileName, exten)
 	} else {
 		filename = encryptedfileName
-		encryptedfileName = encryptedfileName + ".aes"
+		encryptedfileName = encryptedfileName + AppExtension
 	}
 
 	// check if file exists

@@ -13,6 +13,7 @@
 # Test Data
 test-data/
 *.aes
+*.lck
 *.jpg
 *.mp3
 *.mp4
