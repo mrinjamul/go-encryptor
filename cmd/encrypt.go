@@ -38,7 +38,7 @@ import (
 var encryptCmd = &cobra.Command{
 	Use:     "encrypt",
 	Aliases: []string{"en"},
-	Short:   "Encrypt file using specified method",
+	Short:   "Encrypt file or folder",
 	Long:    `Encrypt file using specified method. (Default: AES)`,
 	Run:     encryptRun,
 }
@@ -208,6 +208,14 @@ func init() {
 	// is called directly, e.g.:
 	// encryptCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	encryptCmd.Flags().BoolVarP(&keepenOpt, "keep", "k", false, "Keep uncrypted file")
-	encryptCmd.Flags().StringVarP(&methodOpt, "method", "m", "aes", "Encryption method (aes, xchacha20, none)")
+	encryptCmd.Flags().StringVarP(&methodOpt, "method", "m", "aes", "Encryption method (aes, chacha20, none)")
 	encryptCmd.Flags().StringVarP(&passwordOpt, "password", "p", "", "Password")
+
+	// pre-execution
+	methodOpt = strings.ToLower(methodOpt)
+	if methodOpt != "aes" && methodOpt != "chacha20" && methodOpt != "xchacha20" {
+		fmt.Println("Error: Invalid Encryption method")
+		os.Exit(1)
+	}
+
 }

@@ -22,6 +22,7 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"encoding/binary"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -37,7 +38,7 @@ import (
 var decryptCmd = &cobra.Command{
 	Use:     "decrypt",
 	Aliases: []string{"de"},
-	Short:   "Decrypt encrypted file using specified method",
+	Short:   "Decrypt encrypted file",
 	Long:    `Decrypt encrypted file using specified method. (Default: AES)`,
 	Run:     decryptRun,
 }
@@ -119,7 +120,7 @@ func decryptRun(cmd *cobra.Command, args []string) {
 
 	// print to stdout and return
 	if stdoutOpt {
-		fmt.Print(data)
+		binary.Write(os.Stdout, binary.LittleEndian, data)
 		return
 	}
 
@@ -140,8 +141,8 @@ func decryptRun(cmd *cobra.Command, args []string) {
 		if err != nil {
 			utils.ErrorLogger(err)
 		}
-		err = twarper.ExtarctTar(path, filename+".tez")
-		_ = os.Remove(filename + ".tez")
+		err = twarper.ExtarctTar(path, filename+"tez")
+		_ = os.Remove(filename + "tez")
 		if err != nil {
 			utils.ErrorLogger(err)
 			os.Exit(1)
@@ -175,8 +176,15 @@ func init() {
 	// is called directly, e.g.:
 	// decryptCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	decryptCmd.Flags().BoolVarP(&keepdeOpt, "keep", "k", false, "Keep encrypted file")
-	decryptCmd.Flags().BoolVarP(&stdoutOpt, "out", "o", false, "Print to stdout")
+	decryptCmd.Flags().BoolVar(&stdoutOpt, "print", false, "Print the encrypted file")
+	decryptCmd.Flags().StringVarP(&methodOpt, "method", "m", "aes", "Encryption method (aes, chacha20, none)")
 	decryptCmd.Flags().StringVarP(&passwordOpt, "password", "p", "", "Get password")
-	// methods for encryption flag
-	decryptCmd.Flags().StringVarP(&methodOpt, "method", "m", "aes", "Encryption method")
+
+	// pre-execution
+	methodOpt = strings.ToLower(methodOpt)
+	if methodOpt != "aes" && methodOpt != "chacha20" && methodOpt != "xchacha20" {
+		fmt.Println("Error: Invalid Encryption method")
+		os.Exit(1)
+	}
+
 }
