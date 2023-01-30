@@ -8,10 +8,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/mrinjamul/gpassmanager/blob/master/LICENSE)
 [![Github all releases](https://img.shields.io/github/downloads/mrinjamul/go-encryptor/total.svg)](https://GitHub.com/mrinjamul/go-encryptor/releases/)
 
-A encryptor to encrypt files using passwords.
+## Overview
+
+a command-line application written in Go that allows for encrypting and decrypting data using AES 256 (GCM) and ChaCha20 poly 1305 encryption algorithms. It provides a simple and straightforward way to protect sensitive data and ensure that it can only be accessed by authorized users.
 
 ## Features
 
+- Provides a simple and easy-to-use command-line interface
 - Can encrypt any file or folder
 - AES-256 encryption
 - Password based encryption
@@ -33,17 +36,21 @@ go build
 
 ## Usage
 
-Encrypt a file,
+The following is an example of how to use go-encryptor to encrypt data using AES 256 (GCM):
 
 ```sh
-go-encryptor encrypt "filename"
+go-encryptor encrypt -p "256Key-32Characters1234567890" -m "aes" "filename"
 ```
 
-Decrypt a file,
+And the following is an example of how to use go-encryptor to encrypt data using ChaCha20-Poly1305:
 
 ```sh
-go-encryptor decrypt "filename"
+go-encryptor encrypt -p "256Key-32Characters1234567890" -m "chacha20" "filename"
 ```
+
+For decryption, the usage is similar, with the only difference being the use of the decrypt subcommand instead of encrypt.
+
+For a full list of options and usage instructions, run `go-encryptor --help`
 
 Use k flag in both `encrypt` & `decrypt` to keep the file.
 
@@ -153,3 +160,11 @@ Executed in  755.63 millis    fish           external
 ## License
 
 This application is licensed under MIT, Copyright © 2021 Injamul Mohammad Mollah <mrinjamul@gmail.com>
+
+## Troubleshooting
+
+If you encounter any errors while using go-encryptor, make sure that you have the correct key, algorithm and that the input and output files are correctly specified. If the issue persists, please file an issue on the GitHub repository for the project.
+
+## Conclusion
+
+go-encryptor is a simple and easy-to-use command-line application for encrypting and decrypting data using AES 256 (GCM) and ChaCha20-Poly1305 encryption algorithms. Its straightforward configuration and user-friendly interface make it a great choice for protecting sensitive information.
