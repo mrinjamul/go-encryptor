@@ -22,6 +22,7 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"encoding/binary"
 	"fmt"
 	"os"
 	"strings"
@@ -36,7 +37,7 @@ import (
 var decryptCmd = &cobra.Command{
 	Use:     "decrypt",
 	Aliases: []string{"de"},
-	Short:   "Decrypt encrypted file using specified method",
+	Short:   "Decrypt encrypted file",
 	Long:    `Decrypt encrypted file using specified method. (Default: AES)`,
 	Run:     decryptRun,
 }
@@ -64,12 +65,20 @@ func decryptRun(cmd *cobra.Command, args []string) {
 
 	filename, _ := utils.GetFileNameExt(encryptedfileName)
 
-	password, err := utils.PromptTermPass("Password: ")
-	if err != nil {
-		utils.ErrorLogger(err)
-		os.Exit(1)
+	var password []byte
+
+	if passwordOpt == "" {
+		p, err := utils.PromptTermPass("Password: ")
+		password = p
+		if err != nil {
+			utils.ErrorLogger(err)
+			os.Exit(1)
+		}
+	} else {
+		password = []byte(passwordOpt)
 	}
 
+	// read encrypted data
 	encryptedData, err := utils.ReadFile(encryptedfileName)
 	if err != nil {
 		utils.ErrorLogger(err)
@@ -82,13 +91,29 @@ func decryptRun(cmd *cobra.Command, args []string) {
 	// 	os.Exit(0)
 	// }
 
-	data, err := crypt.AESDecrypt(password, encryptedData)
-	if err != nil {
-		fmt.Println("Error: Wrong Password")
-		os.Exit(0)
+	var data []byte
+	// check if encryption method
+	if methodOpt == "aes" {
+		data, err = crypt.AESDecrypt(password, encryptedData)
+		if err != nil {
+			fmt.Println("Error: Wrong Password")
+			os.Exit(0)
+		}
+	} else if methodOpt == "xchacha20" || methodOpt == "chacha20" {
+		data, err = crypt.ChaCha20Decrypt(password, encryptedData)
+		if err != nil {
+			fmt.Println("Error: Wrong Password")
+			os.Exit(0)
+		}
 	}
 
 	encryptedExt, data := data[len(data)-3:], data[:len(data)-3]
+
+	// print to stdout and return
+	if stdoutOpt {
+		binary.Write(os.Stdout, binary.LittleEndian, data)
+		return
+	}
 
 	if strings.Contains(string(encryptedExt), "2") {
 		encryptedExt = encryptedExt[:2]
@@ -123,6 +148,7 @@ func decryptRun(cmd *cobra.Command, args []string) {
 
 var (
 	keepdeOpt bool
+	stdoutOpt bool
 )
 
 func init() {
@@ -138,4 +164,15 @@ func init() {
 	// is called directly, e.g.:
 	// decryptCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	decryptCmd.Flags().BoolVarP(&keepdeOpt, "keep", "k", false, "Keep encrypted file")
+	decryptCmd.Flags().BoolVar(&stdoutOpt, "print", false, "Print the encrypted file")
+	decryptCmd.Flags().StringVarP(&methodOpt, "method", "m", "aes", "Encryption method (aes, chacha20, none)")
+	decryptCmd.Flags().StringVarP(&passwordOpt, "password", "p", "", "Get password")
+
+	// pre-execution
+	methodOpt = strings.ToLower(methodOpt)
+	if methodOpt != "aes" && methodOpt != "chacha20" && methodOpt != "xchacha20" {
+		fmt.Println("Error: Invalid Encryption method")
+		os.Exit(1)
+	}
+
 }

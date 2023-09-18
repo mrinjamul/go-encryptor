@@ -37,7 +37,7 @@ import (
 var encryptCmd = &cobra.Command{
 	Use:     "encrypt",
 	Aliases: []string{"en"},
-	Short:   "Encrypt file using specified method",
+	Short:   "Encrypt file or folder",
 	Long:    `Encrypt file using specified method. (Default: AES)`,
 	Run:     encryptRun,
 }
@@ -72,8 +72,9 @@ func encryptRun(cmd *cobra.Command, args []string) {
 	}
 
 	if isDirectory {
-		fmt.Println("Warning: Encrypting Folder is still Experimental")
-		check := utils.ConfirmPrompt("Still Want to encrypt?")
+		// fmt.Println("Warning: Encrypting Folder is still Experimental")
+		// check := utils.ConfirmPrompt("Still Want to encrypt?")
+		check := utils.ConfirmPrompt("It is a folder. Still Want to encrypt?")
 		if !check {
 			os.Exit(0)
 		}
@@ -88,28 +89,35 @@ func encryptRun(cmd *cobra.Command, args []string) {
 	if len(extension) == 2 {
 		extension = extension + "2"
 	}
-	encryptFileName := filename + ".aes"
+	encryptFileName := filename + AppExtension
 
-	password, err := utils.PromptTermPass("Password: ")
-	if err != nil {
-		utils.ErrorLogger(err)
-		os.Exit(1)
-	}
+	var password []byte
+	// if password is not provided
+	if passwordOpt == "" {
+		password, err = utils.PromptTermPass("Password: ")
+		if err != nil {
+			utils.ErrorLogger(err)
+			os.Exit(1)
+		}
 
-	if len(password) < 5 {
-		fmt.Println("Warning: Insecure password")
-		fmt.Println("You should use password with more than 5 characters")
-	}
+		if len(password) < 5 {
+			fmt.Println("Warning: Insecure password")
+			fmt.Println("You should use password with more than 5 characters")
+		}
 
-	verifyPassword, err := utils.PromptTermPass("Verify Password: ")
-	if err != nil {
-		utils.ErrorLogger(err)
-		os.Exit(1)
-	}
+		verifyPassword, err := utils.PromptTermPass("Verify Password: ")
+		if err != nil {
+			utils.ErrorLogger(err)
+			os.Exit(1)
+		}
 
-	if string(verifyPassword) != string(password) {
-		fmt.Println("Error: Both password is not same")
-		os.Exit(1)
+		if string(verifyPassword) != string(password) {
+			fmt.Println("Error: Both password is not same")
+			os.Exit(1)
+		}
+
+	} else {
+		password = []byte(passwordOpt)
 	}
 
 	if isDirectory {
@@ -130,9 +138,17 @@ func encryptRun(cmd *cobra.Command, args []string) {
 	}
 	data = append(data, extension...)
 
-	encryptdata, err := crypt.AESEncrypt(password, data)
-	if err != nil {
-		utils.ErrorLogger(err)
+	var encryptdata []byte
+	if methodOpt == "aes" {
+		encryptdata, err = crypt.AESEncrypt(password, data)
+		if err != nil {
+			utils.ErrorLogger(err)
+		}
+	} else if methodOpt == "xchacha20" || methodOpt == "chacha20" {
+		encryptdata, err = crypt.ChaCha20Encrypt(password, data)
+		if err != nil {
+			utils.ErrorLogger(err)
+		}
 	}
 
 	utils.SaveFile(encryptFileName, encryptdata)
@@ -152,19 +168,26 @@ func encryptRun(cmd *cobra.Command, args []string) {
 				utils.ErrorLogger(err)
 			}
 		} else {
-			// Prompt before deletion as it's still experimental
-			if utils.ConfirmPrompt("Do you want to remove unencrypted folder?") {
-				err := os.RemoveAll(args[0])
-				if err != nil {
-					utils.ErrorLogger(err)
-				}
+			err := os.RemoveAll(args[0])
+			if err != nil {
+				utils.ErrorLogger(err)
 			}
+
+			// Prompt before deletion as it's still experimental
+			// if utils.ConfirmPrompt("Do you want to remove unencrypted folder?") {
+			// 	err := os.RemoveAll(args[0])
+			// 	if err != nil {
+			// 		utils.ErrorLogger(err)
+			// 	}
+			// }
 		}
 	}
 }
 
 var (
-	keepenOpt bool
+	keepenOpt   bool
+	methodOpt   string
+	passwordOpt string
 )
 
 func init() {
@@ -180,4 +203,14 @@ func init() {
 	// is called directly, e.g.:
 	// encryptCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	encryptCmd.Flags().BoolVarP(&keepenOpt, "keep", "k", false, "Keep uncrypted file")
+	encryptCmd.Flags().StringVarP(&methodOpt, "method", "m", "aes", "Encryption method (aes, chacha20, none)")
+	encryptCmd.Flags().StringVarP(&passwordOpt, "password", "p", "", "Password")
+
+	// pre-execution
+	methodOpt = strings.ToLower(methodOpt)
+	if methodOpt != "aes" && methodOpt != "chacha20" && methodOpt != "xchacha20" {
+		fmt.Println("Error: Invalid Encryption method")
+		os.Exit(1)
+	}
+
 }
